@@ -55,6 +55,7 @@ Encode={
           ' ': 'SCP'
           }
 Decode= {value: key for key, value in Encode.items()}
+
 asciii=[]
 j=0
 inp=input("Enter Any Paragraph To Encrypt it (Only_Alphabets)\n")
@@ -67,10 +68,10 @@ for i in range(0,len(inp)):
     asciii.append(random_key)
     random_key = random.choice(list(Encode.values()))
     asciii.append(random_key)
-dec=[]
-print("Encoded : ",asciii) 
+print("\nEncoded : ",end="") 
+for i in range(len(asciii)):
+    print(asciii[i],end="")
+print("\nDecoded: ",end="")
 for i in range(0,len(asciii),4) :
- ch=Decode[asciii[i]]
- dec.append(ch)
-print("Decoded : ",dec)
- 
+    print(Decode[asciii[i]],end="")
+     
