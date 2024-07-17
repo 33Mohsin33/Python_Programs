@@ -1,1 +1,70 @@
+import cv2
+import face_recognition
+import pandas as pd
+import os
+from datetime import datetime
+import keyboard
 
+def Attendance():
+# Load known faces and their corresponding names
+ known_faces = []
+ known_names = []
+ known_faces_dir = "D:/Python/known_faces_dir"
+#Loads
+ for filename in os.listdir("D:/Python/known_faces_dir"):
+    if filename.endswith(".jpg") or filename.endswith(".png"):
+        img = face_recognition.load_image_file(os.path.join("D:/Python/known_faces_dir", filename))
+        encoding = face_recognition.face_encodings(img)[0]
+        known_faces.append(encoding)
+        known_names.append(os.path.splitext(filename)[0])
+
+# Initialize variables
+ attendance = {}
+ video_capture = cv2.VideoCapture(0)
+ video_capture.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+ video_capture.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+
+ while True:
+    ret, frame = video_capture.read()
+    frame=cv2.flip(frame,1)
+
+    face_locations = face_recognition.face_locations(frame)
+    face_encodings = face_recognition.face_encodings(frame, face_locations)
+
+    for face_encoding, face_location in zip(face_encodings, face_locations):
+        matches = face_recognition.compare_faces(known_faces, face_encoding)
+        name = "Unknown"
+
+        if True in matches:
+            first_match_index = matches.index(True)
+            name = known_names[first_match_index]
+            
+
+        # Update attendance
+        if name not in attendance and name!="Unknown":
+    
+         attendance[name] = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        # Convert attendance dictionary to a DataFrame
+         attendance_df = pd.DataFrame(list(attendance.items()), columns=['Name', "Date Time"])
+        # Save the DataFrame to an Excel file with the name and date
+         if name!="Unknown":
+                excel_filename = f"attendance_{datetime.now().strftime('%Y-%m-%d')}.xlsx"
+                attendance_df.to_excel(excel_filename, index=True)
+
+        # Draw rectangle and display name
+        top, right, bottom, left = face_location
+        cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
+        font = cv2.FONT_HERSHEY_DUPLEX
+        cv2.putText(frame, name, (left + 6, bottom - 6), font, 0.5, (255, 255, 255), 1)
+
+    # Display the resulting frame
+    cv2.imshow("Camera", frame)
+    cv2.waitKey(1)
+    if keyboard.is_pressed('q'):
+        break
+
+# Release handle to the webcama
+ video_capture.release()
+ cv2.destroyAllWindows()
+if __name__=="__main__":
+ Attendance()
